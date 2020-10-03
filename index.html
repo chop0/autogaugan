@@ -3,8 +3,10 @@
   <head>
     <meta charset="UTF-8">
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="Content-Security-Policy" content="*">
+    <meta http-equiv="X-Content-Security-Policy" content="*">
+<link rel="stylesheet" type="text/css" href="demo.css">
+<link rel="stylesheet" href="w3.css">
     <title>Hello World!</title>
   </head>
   <body>
@@ -12,6 +14,150 @@
     We are using Node.js <span id="node-version"></span>,
     Chromium <span id="chrome-version"></span>,
     and Electron <span id="electron-version"></span>.
+
+<script>window.$ = window.jQuery = require('./jquery.min.js');</script>
+
+<div>
+
+<table class='table'>
+<tr>
+  <td width=11% valign="center"><h4>Fill/brush color: </h4></td>
+  <td width=4% valign="center"><canvas id="brush_color"></canvas></td>      
+  <td width=11% valign="center"><h4>Brush shape: </h4></td>
+  <td width=10%>
+      <button id="brush_circle" class="btn brush_circle"></button>
+      <button id="brush_square" class="btn brush_square"></button>
+      <button id="brush_diamond" class="btn brush_diamond"></button>    
+  </td>
+  <td width=9%><h4>Brush size: </h4></td>
+  <td width=4%><h4><span id="rangevalue"></span></h4></td>
+  <td> <input type="range" step= "2" min="2" max="200" value="24" class="slider" id="myRange"> </td>
+  <td width=10% align='right'>
+    <a target="_blank" href='https://www.nvidia.com/en-us/research/'><img src='nvidia.png' style="width:100%;"></a>
+  </td>  
+  <td width=12% align='center'><h4>GauGAN Beta</h4><td>  
+</tr>
+</table>
+
+<table class='table' id="main_frame">
+<tr> 
+<td  width=8% valign="top">
+<div class='btn-group' id="category">
+<table>
+<tr><th><button class="btncat cat-bldg">Building</button></th></tr>
+<tr><th><button class="btncat cat-ground">Ground</button></th></tr>
+<tr><th><button class="btncat cat-landscape cat-active">Landscape</button></th></tr>
+<tr><th><button class="btncat cat-plant">Plant</button></th></tr>
+</table>
+</div>
+<hr>
+<div class="btn-group" id="palette"> 
+</div>
+</td>
+
+<td valign='top' class='td' align='center'>
+<table>
+<tr><th><button id="new" class="btn new"></button></th></tr>
+<tr><th><button id="brush" class="btn brush"></button></th></tr>
+<tr><th><button id="fill" class="btn fill"></button></th></tr>
+<tr><th><button id="eyedropper" class="btn eyedropper"></button></th></tr>
+<tr><th><button id="undo" class="btn undo"></button></th></tr>
+</table>
+</td>
+
+<td align='center'><canvas id="viewport"></canvas> </td>
+<td valign='bottom' algin='left'>
+  <a id="download" download="gaugan_input.png" href="" onclick="download_segmap(this);"><button id="save" class="btn save"></button></a>
+</td>
+<td valign='center' class='td' align='center'>
+<button id="render" class="btn render"></button></td>
+<td align='center'><canvas id="output"></canvas> </td>
+<td valign='bottom' algin='left'>
+<a id="download" download="gaugan_output.jpg" href="" onclick="download_rendered(this);"><button id="save_render" class="btn save_render"></button></a>
+</td>
+</tr>
+</table>
+
+
+<table class='table'>
+  <tr> 
+  <th><button id="random"   class="btn random"></button></th>
+  <th><button id="example0" class="btn example0"></button></th>  
+  <th><button id="example1" class="btn example1"></button></th>
+  <th><button id="example2" class="btn example2"></button></th>
+  <th><button id="example3" class="btn example3"></button></th>
+  <th><button id="example4" class="btn example4"></button></th>
+  <th><button id="example5" class="btn example5"></button></th>
+  <th><button id="example6" class="btn example6"></button></th>
+  <th><button id="example7" class="btn example7"></button></th>
+  <th><button id="example8" class="btn example8"></button></th>
+  <th><button id="example9" class="btn example9"></button></th>
+  <th><button id="example10" class="btn example10"></button></th>
+  <th></th> <th></th> <th></th> <th></th> <th></th> <th></th>    
+  <th><div class="container"><canvas id="custom"></canvas>
+      <button id="customBtn" class="btn">b</button></div></th>
+  </tr>
+</table>
+
+<table class='table'>
+<tr>
+<td align='center' class="w3-button w3-gray" width=33%>
+<table>
+  <tr><th><h4>Upload Segmentation Map<button id="info_segmap" class="btn info_segmap"></button></th></h4></tr>
+  <tr><th>
+  <form action='#' onsubmit="return false;">
+      <input type='file' accept="image/png" class="custom-file-input-segmap" id='segmapfile'/> 
+      <input type='button' id='btnSegmapLoad' class="uploadbtn" value='Upload' onclick='loadSegmap();' />
+  </form>
+  </th></tr>
+</table>
+</td>
+<td align='center' class="w3-button w3-light-gray" width=33%>
+<table>
+  <tr><th><h4>Upload Landscape Image <button id="info_real" class="btn info_real"></button> </h4></th></tr>
+  <tr><th>  
+  <form action='#' onsubmit="return false;">
+      <input type='file' accept="image/*" class="custom-file-input-real" id='realfile'/>
+      <input type='button' id='btnRealLoad' class="uploadbtn" value='Upload' onclick='loadReal();' />
+  </form>
+  </th></tr></table>
+  </td>
+<td align='center' class="w3-button w3-gray" width=33%>
+<table>
+  <tr><th><h4>Upload Custom Style Filter<button id="info_style" class="btn info_style"></button></h4></th>  </tr>
+  <tr><th>
+  <form action='#' onsubmit="return false;">
+    <input type='file' accept="image/*" class="custom-file-input" id='imgfile'/>
+    <input type='button' id='btnLoad' class="uploadbtn" value='Upload' onclick='loadImage();' />
+  </form>
+  </th></tr></table>
+  </td>
+</tr>
+</table>
+
+<h4>
+<table class='table'>
+<tr><th align='left'>
+  <h4>
+  <ul>  
+  <p class="w3-red">
+ 
+  </p>    
+  <p class="w3-light-gray"> 1. By using the app, you are agreeing that NVIDIA may store, use, and redistribute the uploaded file for research or commercial purposes. You are also agreeing to this service <a href="term.txt">Terms and Conditions</a>.</p>
+  <p class="w3-light-gray"> 2. Checkout out our <a href="https://www.nvidia.com/en-us/about-nvidia/privacy-policy/">Privacy Policy</a>. </p>
+  <p class="w3-light-gray"> 3. <b>Hotkeys. Ctrl + Shift + B = Brush. Ctrl + Shift + F = Fill. Ctrl + Z = Undo</b></p>  
+  <p class="w3-light-gray"> 4. Check out our <a href="  https://www.youtube.com/watch?v=p5U4NgVGAwg&t=40s">introduction video</a> and <a href="https://www.youtube.com/watch?v=uNv7XBngmLY">howto video</a> before using the app. </p>  
+  <p class="w3-light-gray"> 5. The NVIDIA GauGAN beta is based on NVIDIA's CVPR 2019 paper on <a href="https://github.com/NVlabs/SPADE">Semantic Image Synthesis with Spatially-Adaptive Normalization</a> or SPADE.</p>
+  <p class="w3-light-gray"> 6. The semantic segmentation feature is powered by PyTorch <a href="https://github.com/kazuto1011/deeplab-pytorch">deeplabv2</a> under <a href="https://github.com/kazuto1011/deeplab-pytorch/blob/master/LICENSE">MIT licesne</a>.</p>
+  <p class="w3-light-gray"> 7. Icon credits. Paint brush icon by Nociconist, ID. Fill icon by catyline_Icon, ID. New icon by Phil Goodwin, US. Download icon by Misha Heesakkers, NL. Run icon by Alice Design. Color-picker by Roselin Christina.S, IN. Eyedropper icon by Milko, BG, Random icon by Gavriil Klimov.
+  </p>
+</ul>
+</h4>
+</th></tr>
+</table>
+</h4>
+
+<canvas id="output2k"></canvas>
 
     <!-- You can also require other files to run in this process -->
     <script src="./renderer.js"></script>
