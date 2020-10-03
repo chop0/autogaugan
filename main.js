@@ -44,7 +44,9 @@ app.on('window-all-closed', function () {
 // code. You can also put them in separate files and require them here.
 ipcMain.on("SAVE_FILE", (event, path, buffer) => {
     fs.writeFile(path, buffer, err => {
+console.log("path");
         if (err) {
+	console.log(err.message);
             event.sender.send("ERROR", err.message)
         } else {
             event.sender.send("SAVED_FILE", path)

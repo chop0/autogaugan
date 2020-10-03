@@ -4,6 +4,7 @@
 // `nodeIntegration` is turned off. Use `preload.js` to
 // selectively enable features needed in the rendering
 // process.
+const {ipcRenderer} = require('electron');
 
 var isFirefox = typeof InstallTrigger !== 'undefined';
 var colors = ['#00ac0d', '#012f47', '#0275b8', '#03c098', '#04434f', '#05fb29', '#06c312', '#076728', '#0809b6', '#09d3cf', '#0a150b', '#0bf2a6', '#0c246f', '#0d575d', '#0e46f9', '#0fd881', '#1058df', '#118c76', '#123a2c', '#13c1d8', '#14e67d', '#152718', '#165743', '#17aed2', '#1858ef', '#195103', '#1aa5ea', '#1b19cc', '#1c4de6', '#1d4823', '#1e09d6', '#1f94fe', '#2073bd', '#21d0c5', '#22f3d7', '#23c52b', '#24fe20', '#254f0b', '#26af68', '#27c0d4', '#28528a', '#2963b6', '#2ad8eb', '#2bb1a5', '#2cf37d', '#2d1d9c', '#2e936f', '#2f93e8', '#308e02', '#31a71b', '#3220d3', '#33c1d9', '#340997', '#35b935', '#367f33', '#3720ae', '#381f94', '#39cab5', '#3af41d', '#3b9743', '#3ca323', '#3dfe27', '#3ecb89', '#3f7249', '#40b729', '#411c97', '#422283', '#43802e', '#4480da', '#45a4b2', '#46356c', '#478503', '#48261f', '#49e809', '#4af48a', '#4b111b', '#4c4fad', '#4d84c7', '#4e69a7', '#4f2a3d', '#50ba55', '#511f61', '#52782c', '#530122', '#5441a2', '#55e758', '#56a921', '#573985', '#5823e8', '#5966ff', '#5a7724', '#5b0b00', '#5caecb', '#5d5222', '#5e5bc5', '#5f807e', '#606e32', '#6163fe', '#623550', '#638cbe', '#647988', '#65aabd', '#665481', '#67cbd1', '#684470', '#696969', '#6ac478', '#6b2f5b', '#6c7fa8', '#6df474', '#6e6e28', '#6fccb0', '#706419', '#71b443', '#72e867', '#734efc', '#748f23', '#759472', '#760000', '#77ba1d', '#7817f1', '#79cf21', '#7a8d92', '#7bc800', '#7c32c8', '#7d3054', '#7ec864', '#7f4502', '#80a945', '#81a365', '#82c08c', '#835f2c', '#84c575', '#855efd', '#869664', '#87716f', '#88b25b', '#892455', '#8aa2a7', '#8b3027', '#8c5dcb', '#8de61e', '#8e629e', '#8f2a91', '#90cdc6', '#9170c7', '#92e712', '#9364c8', '#946e28', '#956432', '#9600b1', '#978a29', '#98725d', '#999900', '#9ac6da', '#9b7fc9', '#9ceedd', '#9dbbf2', '#9e9eaa', '#9f79db', '#a06249', '#a1a164', '#a2a3eb', '#a3ded1', '#a47b69', '#a5c3ba', '#a65280', '#a7aed6', '#a8c832', '#a99410', '#aad16a', '#ab32a4', '#ac9b5e', '#ad0e18', '#ae2974', '#af3abf', '#b0c1c3', '#b1c8ff', '#b20a88', '#b356b8', '#b42b5b', '#b57b00'];
@@ -36,7 +37,7 @@ function label_selection() {
     for (; i < args.length; i++) {
         console.log(args.length);
         args[i]['addEventListener']('click', function() {
-            console.log(this.className);
+            //console.log(this.className);
             var header = document.getElementById('palette');
             console.log(cat_sublabels[current_cat_active_id]['length']);
             var previousState = 0;
@@ -107,8 +108,8 @@ brush_color_context.fillRect(0, 0, BRUSH_COLOR_SIZE, BRUSH_COLOR_SIZE);
 function getRandomInt(n) {
     return Math.floor(Math.random() * Math.floor(n))
 }
-var urls = ['http://54.191.227.231:443/', 'http://34.221.84.127:443/', 'http://34.216.59.35:443/'];
-var nurl = 3;
+var urls = ['http://54.191.227.231:443/', 'http://34.216.59.35:443/'];
+var nurl = urls.length;
 var Url;
 var this_moment = (new Date)['toLocaleDateString']();
 var this_moment2 = (new Date)['getTime']();
@@ -217,9 +218,10 @@ rect = {};
 drag = false;
 context_output2k.canvas.width = CANVAS_WIDTH_2K;
 context_output2k.canvas.height = CANVAS_HEIGHT_2K;
-function saveBlob(blob) {
+function saveBlob(blob, fileName) {
     let reader = new FileReader()
     reader.onload = function() {
+console.log(reader.readyState);
         if (reader.readyState == 2) {
             var buffer = new Buffer(reader.result)
             ipcRenderer.send("SAVE_FILE", fileName, buffer)
@@ -232,12 +234,12 @@ function saveBlob(blob) {
 
 
 function render(c, n) {
-    
+//    console.log(n)
     var random_number = getRandomInt(1E9);
     Url = urls[random_number % nurl];
 var global_fn = this_moment + ',' + this_moment2 + '-' + random_number;
     
-    console.log(c)
+    
     var _0xe799x43 = 1;
     if (_0xe799x43 != 1) alert('Please check the button in terms and conditions section before starting using the app.');
     else $['ajax']({
@@ -249,7 +251,7 @@ var global_fn = this_moment + ',' + this_moment2 + '-' + random_number;
             name: global_fn
         },
         success: function(retu_data) {
-            console.log('success');
+        //    console.log('success');
             var form = new FormData;
             form.append('name', global_fn);
             form.append('style_name', style_name);
@@ -269,19 +271,19 @@ var global_fn = this_moment + ',' + this_moment2 + '-' + random_number;
                 var settingHandler = window.URL || window.webkitURL;
                 var _type = settingHandler.createObjectURL(value);
                 args.src = _type;
-                console.log(args.src)
-		n && saveBlob(value, `output/${n}.jpg`)
+                console.log(args.src, n)
+		saveBlob(value, `output/${n}.jpg`)
             };
             args.onload = function() {
                 context_output2k.drawImage(args, 0, 0, GET_AUTH_URL_TIMEOUT, artistTrack);
                 context_output.drawImage(canvas_output2k, 0, 0, GET_AUTH_URL_TIMEOUT, artistTrack, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
             }
         },
-        error: function(deleted_model) {
-            console.log('error')
+        error: function(deleted_model, error) {
+            console.log("error", deleted_model, error)
         }
     })['done'](function(canCreateDiscussions) {
-        console.log('sent')
+//        console.log('sent')
     })
 }
 
@@ -674,7 +676,7 @@ function loadSegmap() {
             fr.readAsDataURL(artistTrack)
         });
     }
-    console.log('load image')
+//    console.log('load image')
 }
 
 function loadReal() {
